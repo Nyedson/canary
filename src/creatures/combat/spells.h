@@ -49,13 +49,13 @@ class Spells final : public Scripts {
 
 		InstantSpell* getInstantSpellById(uint32_t spellId);
 
-		TalkActionResult_t playerSaySpell(Player* player, std::string &words);
+		TalkActionResult_t playerSaySpell(Player* player, std::string &words, const std::string& lowerWords);
 
 		static Position getCasterPosition(Creature* creature, Direction dir);
 
 		std::list<uint16_t> getSpellsByVocation(uint16_t vocationId);
 
-		const std::map<std::string, InstantSpell> &getInstantSpells() const {
+		const phmap::flat_hash_map<std::string, InstantSpell> &getInstantSpells() const {
 			return instants;
 		};
 
@@ -71,7 +71,7 @@ class Spells final : public Scripts {
 
 	private:
 		std::map<uint16_t, RuneSpell> runes;
-		std::map<std::string, InstantSpell> instants;
+		phmap::flat_hash_map<std::string, InstantSpell> instants;
 
 		friend class CombatSpell;
 };

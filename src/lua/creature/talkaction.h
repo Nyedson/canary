@@ -33,10 +33,10 @@ class TalkAction : public Script {
 			words = word;
 			wordsMap.push_back(word);
 		}
-		std::string getSeparator() const {
+		char getSeparator() const {
 			return separator;
 		}
-		void setSeparator(std::string sep) {
+		void setSeparator(char sep) {
 			separator = sep;
 		}
 
@@ -51,7 +51,7 @@ class TalkAction : public Script {
 
 		std::string words;
 		std::vector<std::string> wordsMap;
-		std::string separator = "\"";
+		char separator = '"';
 };
 
 class TalkActions final : public Scripts {
@@ -76,7 +76,7 @@ class TalkActions final : public Scripts {
 		void clear();
 
 	private:
-		std::map<std::string, TalkAction> talkActions;
+		phmap::flat_hash_map<std::string, TalkAction> talkActions;
 };
 
 constexpr auto g_talkActions = &TalkActions::getInstance;

@@ -11,6 +11,7 @@
 #define SRC_ITEMS_FUNCTIONS_ITEM_CUSTOM_ATTRIBUTE_HPP_
 
 #include "io/fileloader.h"
+#include <variant>
 
 class CustomAttribute {
 	public:
