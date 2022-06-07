@@ -2083,7 +2083,7 @@ void Player::addExperience(Creature* target, uint64_t exp, bool sendText /* = fa
 		message.primary.color = TEXTCOLOR_WHITE_EXP;
 		sendTextMessage(message);
 
-		SpectatorHashSet spectators;
+		SpectatorVector spectators;
 		g_game().map.getSpectators(spectators, position, false, true);
 		spectators.erase(this);
 		if (!spectators.empty()) {
@@ -2176,7 +2176,7 @@ void Player::removeExperience(uint64_t exp, bool sendText /* = false*/) {
 		message.primary.color = TEXTCOLOR_RED;
 		sendTextMessage(message);
 
-		SpectatorHashSet spectators;
+		SpectatorVector spectators;
 		g_game().map.getSpectators(spectators, position, false, true);
 		spectators.erase(this);
 		if (!spectators.empty()) {
@@ -2618,8 +2618,8 @@ bool Player::spawn() {
 		return false;
 	}
 
-	SpectatorHashSet spectators;
-	g_game().map.getSpectators(spectators, position, true);
+	SpectatorVector spectators;
+	g_game().map.getSpectators(spectators, position, false, true);
 	for (Creature* spectator : spectators) {
 		if (!spectator) {
 			continue;
@@ -2660,7 +2660,7 @@ void Player::despawn() {
 
 	std::vector<int32_t> oldStackPosVector;
 
-	SpectatorHashSet spectators;
+	SpectatorVector spectators;
 	g_game().map.getSpectators(spectators, tile->getPosition(), true);
 	size_t i = 0;
 	for (Creature* spectator : spectators) {
@@ -6171,7 +6171,7 @@ bool Player::saySpell(
 	SpeakClasses type,
 	const std::string &text,
 	bool ghostMode,
-	SpectatorHashSet* spectatorsPtr /* = nullptr*/,
+	SpectatorVector* spectatorsPtr /* = nullptr*/,
 	const Position* pos /* = nullptr*/
 ) {
 	if (text.empty()) {
@@ -6183,10 +6183,10 @@ bool Player::saySpell(
 		pos = &getPosition();
 	}
 
-	SpectatorHashSet spectators;
+	SpectatorVector spectators;
 
 	if (!spectatorsPtr || spectatorsPtr->empty()) {
-		// This somewhat complex construct ensures that the cached SpectatorHashSet
+		// This somewhat complex construct ensures that the cached SpectatorVector
 		// is used if available and if it can be used, else a local vector is
 		// used (hopefully the compiler will optimize away the construction of
 		// the temporary when it's not used).
