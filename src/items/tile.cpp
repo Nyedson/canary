@@ -1588,36 +1588,28 @@ void Tile::resetTileFlags(const Item* item) {
 		}
 	} while (0);
 
-
 	if ((blockSolid | immovableBlockSolid | blockPath | noFieldBlockPath | immovableBlockPath | immovableNoFieldBlockPath | blockProjectile) != false) {
 		if (ground && item != ground) {
 			if (blockSolid && ground->hasProperty(CONST_PROP_BLOCKSOLID)) {
 				blockSolid = false;
-
 			}
 			if (immovableBlockSolid && ground->hasProperty(CONST_PROP_IMMOVABLEBLOCKSOLID)) {
 				immovableBlockSolid = false;
-
 			}
 			if (blockPath && ground->hasProperty(CONST_PROP_BLOCKPATH)) {
 				blockPath = false;
-
 			}
 			if (noFieldBlockPath && ground->hasProperty(CONST_PROP_NOFIELDBLOCKPATH)) {
 				noFieldBlockPath = false;
-
 			}
 			if (immovableBlockPath && ground->hasProperty(CONST_PROP_IMMOVABLEBLOCKPATH)) {
 				immovableBlockPath = false;
-
 			}
 			if (immovableNoFieldBlockPath && ground->hasProperty(CONST_PROP_IMMOVABLENOFIELDBLOCKPATH)) {
 				immovableNoFieldBlockPath = false;
-
 			}
 			if (blockProjectile && ground->hasProperty(CONST_PROP_BLOCKPROJECTILE)) {
 				blockProjectile = false;
-
 			}
 		}
 
@@ -1626,31 +1618,24 @@ void Tile::resetTileFlags(const Item* item) {
 				if (item != checkItem) {
 					if (blockSolid && checkItem->hasProperty(CONST_PROP_BLOCKSOLID)) {
 						blockSolid = false;
-		
 					}
 					if (immovableBlockSolid && checkItem->hasProperty(CONST_PROP_IMMOVABLEBLOCKSOLID)) {
 						immovableBlockSolid = false;
-		
 					}
 					if (blockPath && checkItem->hasProperty(CONST_PROP_BLOCKPATH)) {
 						blockPath = false;
-		
 					}
 					if (noFieldBlockPath && checkItem->hasProperty(CONST_PROP_NOFIELDBLOCKPATH)) {
 						noFieldBlockPath = false;
-		
 					}
 					if (immovableBlockPath && checkItem->hasProperty(CONST_PROP_IMMOVABLEBLOCKPATH)) {
 						immovableBlockPath = false;
-		
 					}
 					if (immovableNoFieldBlockPath && checkItem->hasProperty(CONST_PROP_IMMOVABLENOFIELDBLOCKPATH)) {
 						immovableNoFieldBlockPath = false;
-		
 					}
 					if (blockProjectile && checkItem->hasProperty(CONST_PROP_BLOCKPROJECTILE)) {
 						blockProjectile = false;
-		
 					}
 				}
 			}
