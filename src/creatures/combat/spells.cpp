@@ -21,7 +21,7 @@ Spells::Spells() {
 
 Spells::~Spells() = default;
 
-TalkActionResult_t Spells::playerSaySpell(Player* player, std::string &words, const std::string& lowerWords) {
+TalkActionResult_t Spells::playerSaySpell(Player* player, std::string &words, const std::string &lowerWords) {
 	std::string param, instantWords = lowerWords;
 	if (instantWords.size() >= 4 && instantWords.front() != '"') {
 		size_t param_find = instantWords.find('"');
@@ -452,7 +452,7 @@ bool Spell::playerRuneSpellCheck(Player* player, const Position &toPos) {
 		return false;
 	}
 
-	if (range != -1 && !g_game().canThrowObjectTo(playerPos, toPos, true, range, range)) {
+	if (range != -1 && !g_game().canThrowObjectTo(playerPos, toPos, SightLine_CheckSightLineAndFloor, range, range)) {
 		player->sendCancelMessage(RETURNVALUE_DESTINATIONOUTOFREACH);
 		g_game().addMagicEffect(player->getPosition(), CONST_ME_POFF);
 		return false;
@@ -672,7 +672,7 @@ bool InstantSpell::playerCastInstant(Player* player, std::string &param) {
 bool InstantSpell::canThrowSpell(const Creature* creature, const Creature* target) const {
 	const Position &fromPos = creature->getPosition();
 	const Position &toPos = target->getPosition();
-	if (fromPos.z != toPos.z || (range == -1 && !g_game().canThrowObjectTo(fromPos, toPos, checkLineOfSight)) || (range != -1 && !g_game().canThrowObjectTo(fromPos, toPos, checkLineOfSight, range, range))) {
+	if (fromPos.z != toPos.z || (range == -1 && !g_game().canThrowObjectTo(fromPos, toPos, checkLineOfSight ? SightLine_CheckSightLineAndFloor : SightLine_NoCheck)) || (range != -1 && !g_game().canThrowObjectTo(fromPos, toPos, checkLineOfSight ? SightLine_CheckSightLineAndFloor : SightLine_NoCheck, range, range))) {
 		return false;
 	}
 	return true;

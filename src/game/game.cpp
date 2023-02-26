@@ -1273,7 +1273,7 @@ void Game::playerMoveItem(Player* player, const Position &fromPos, uint16_t item
 		}
 	}
 
-	if ((Position::getDistanceX(playerPos, mapToPos) > item->getThrowRange()) || (Position::getDistanceY(playerPos, mapToPos) > item->getThrowRange()) || (Position::getDistanceZ(mapFromPos, mapToPos) * 4 > item->getThrowRange())) {
+	if ((Position::getDistanceX(playerPos, mapToPos) > item->getThrowRange()) || (Position::getDistanceY(playerPos, mapToPos) > item->getThrowRange()) || (Position::getDistanceZ(mapFromPos, mapToPos) + 4 > item->getThrowRange())) {
 		player->sendCancelMessage(RETURNVALUE_DESTINATIONOUTOFREACH);
 		return;
 	}
@@ -3656,7 +3656,7 @@ void Game::playerRequestTrade(uint32_t playerId, const Position &pos, uint8_t st
 		return;
 	}
 
-	if (!canThrowObjectTo(tradePartner->getPosition(), player->getPosition())) {
+	if (!canThrowObjectTo(tradePartner->getPosition(), player->getPosition(), SightLine_CheckSightLineAndFloor)) {
 		player->sendCancelMessage(RETURNVALUE_CREATUREISNOTREACHABLE);
 		return;
 	}
@@ -3799,7 +3799,7 @@ void Game::playerAcceptTrade(uint32_t playerId) {
 		return;
 	}
 
-	if (!canThrowObjectTo(tradePartner->getPosition(), player->getPosition())) {
+	if (!canThrowObjectTo(tradePartner->getPosition(), player->getPosition(), SightLine_CheckSightLineAndFloor)) {
 		player->sendCancelMessage(RETURNVALUE_CREATUREISNOTREACHABLE);
 		return;
 	}
@@ -5024,8 +5024,8 @@ void Game::playerSpeakToNpc(Player* player, const std::string &text) {
 }
 
 //--
-bool Game::canThrowObjectTo(const Position &fromPos, const Position &toPos, bool checkLineOfSight /*= true*/, int32_t rangex /*= Map::maxClientViewportX*/, int32_t rangey /*= Map::maxClientViewportY*/) const {
-	return map.canThrowObjectTo(fromPos, toPos, checkLineOfSight, rangex, rangey);
+bool Game::canThrowObjectTo(const Position &fromPos, const Position &toPos, SightLines_t lineOfSight /*= SightLine_CheckSightLine*/, int32_t rangex /*= Map::maxClientViewportX*/, int32_t rangey /*= Map::maxClientViewportY*/) const {
+	return map.canThrowObjectTo(fromPos, toPos, lineOfSight, rangex, rangey);
 }
 
 bool Game::isSightClear(const Position &fromPos, const Position &toPos, bool floorCheck) const {
