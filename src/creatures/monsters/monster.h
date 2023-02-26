@@ -136,7 +136,6 @@ class Monster final : public Creature {
 		uint32_t getHealingCombatValue(CombatType_t healingType) const;
 
 		bool canWalkOnFieldType(CombatType_t combatType) const;
-		void onAttackedCreatureDisappear(bool isLogout) override;
 
 		void onCreatureAppear(Creature* creature, bool isLogin) override;
 		void onRemoveCreature(Creature* creature, bool isLogout) override;
@@ -219,7 +218,7 @@ class Monster final : public Creature {
 
 		void doAttacking(uint32_t interval) override;
 		bool hasExtraSwing() override {
-			return extraMeleeAttack;
+			return lastMeleeAttack == 0;
 		}
 
 		bool searchTarget(TargetSearchType_t searchType = TARGETSEARCH_DEFAULT);
@@ -343,7 +342,6 @@ class Monster final : public Creature {
 		Position masterPos;
 
 		bool isIdle = true;
-		bool extraMeleeAttack = false;
 		bool randomStepping = false;
 		bool ignoreFieldDamage = false;
 
