@@ -386,7 +386,7 @@ bool Spell::playerSpellCheck(Player* player) const {
 	return true;
 }
 
-bool Spell::playerInstantSpellCheck(Player* player, const Position &toPos) {
+bool Spell::playerInstantSpellCheck(const Player* player, const Position &toPos) const {
 	if (toPos.x == 0xFFFF) {
 		return true;
 	}

@@ -422,7 +422,7 @@ void Tile::onRemoveTileItem(const SpectatorVector &spectators, const std::vector
 	const ItemType &iType = Item::items[item->getID()];
 
 	// send to client + event method
-	size_t i = static_cast<size_t>(-1); // Start index at -1 to avoid copying it
+	auto i = static_cast<size_t>(-1); // Start index at -1 to avoid copying it
 	for (Creature* spectator : spectators) {
 		if (Player* tmpPlayer = spectator->getPlayer()) {
 			tmpPlayer->sendRemoveTileThing(cylinderMapPos, oldStackPosVector[++i]);
@@ -451,7 +451,7 @@ void Tile::onRemoveTileItem(const SpectatorVector &spectators, const std::vector
 	}
 }
 
-void Tile::onUpdateTile(const SpectatorVector &spectators) {
+void Tile::onUpdateTile(const SpectatorVector &spectators) const {
 	const Position &cylinderMapPos = getPosition();
 
 	// send to clients
@@ -560,7 +560,7 @@ ReturnValue Tile::queryAdd(int32_t, const Thing &thing, uint32_t, uint32_t tileF
 				}
 			}
 
-			MagicField* field = getFieldItem();
+			const MagicField* field = getFieldItem();
 			if (!hasBitSet(FLAG_IGNOREFIELDDAMAGE, tileFlags) && field && field->getDamage() != 0) {
 				return RETURNVALUE_NOTPOSSIBLE;
 			}
@@ -1086,11 +1086,12 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 		g_game().map.getSpectators(spectators, getPosition(), true);
 
 		std::vector<int32_t> oldStackPosVector(spectators.size());
-		size_t i = static_cast<size_t>(-1); // Start index at -1 to avoid copying it
+		auto i = static_cast<size_t>(-1); // Start index at -1 to avoid copying it
 
 		for (Creature* spectator : spectators) {
 			if (Player* tmpPlayer = spectator->getPlayer()) {
-				oldStackPosVector[++i] = getStackposOfItem(tmpPlayer, item);
+				auto newI = ++i;
+				oldStackPosVector[newI] = getStackposOfItem(tmpPlayer, item);
 			}
 		}
 
@@ -1113,11 +1114,12 @@ void Tile::removeThing(Thing* thing, uint32_t count) {
 			g_game().map.getSpectators(spectators, getPosition(), true);
 
 			std::vector<int32_t> oldStackPosVector(spectators.size());
-			size_t i = static_cast<size_t>(-1); // Start index at -1 to avoid copying it
+			auto i = static_cast<size_t>(-1); // Start index at -1 to avoid copying it
 
 			for (Creature* spectator : spectators) {
 				if (Player* tmpPlayer = spectator->getPlayer()) {
-					oldStackPosVector[++i] = getStackposOfItem(tmpPlayer, item);
+					auto newI = ++i;
+					oldStackPosVector[newI] = getStackposOfItem(tmpPlayer, item);
 				}
 			}
 
@@ -1586,7 +1588,7 @@ void Tile::resetTileFlags(const Item* item) {
 		if ((blockSolid | immovableBlockSolid | blockPath | noFieldBlockPath | immovableBlockPath | immovableNoFieldBlockPath | blockProjectile) == false) {
 			break;
 		}
-	} while (0);
+	} while (false);
 
 	if ((blockSolid | immovableBlockSolid | blockPath | noFieldBlockPath | immovableBlockPath | immovableNoFieldBlockPath | blockProjectile) != false) {
 		if (ground && item != ground) {

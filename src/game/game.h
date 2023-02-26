@@ -199,7 +199,7 @@ class Game {
 
 		bool internalCreatureTurn(Creature* creature, Direction dir);
 
-		bool internalCreatureSay(Creature* creature, SpeakClasses type, const std::string &text, bool ghostMode, SpectatorVector* spectatorsPtr = nullptr, const Position* pos = nullptr);
+		bool internalCreatureSay(Creature* creature, SpeakClasses type, const std::string &text, bool ghostMode, SpectatorVector* spectatorsPtr = nullptr, const Position* pos = nullptr) const;
 
 		void internalQuickLootCorpse(Player* player, Container* corpse);
 
@@ -569,10 +569,11 @@ class Game {
 		std::map<uint32_t, int32_t> forgeMonsterEventIds;
 		std::set<uint32_t> fiendishMonsters;
 		std::set<uint32_t> influencedMonsters;
+
 		void checkImbuements();
-		bool playerSaySpell(Player* player, SpeakClasses type, const std::string &text);
-		void playerWhisper(Player* player, const std::string &text);
-		bool playerYell(Player* player, const std::string &text);
+		bool playerSaySpell(Player* player, SpeakClasses type, const std::string &text) const;
+		void playerWhisper(Player* player, const std::string &text) const;
+		bool playerYell(Player* player, const std::string &text) const;
 		bool playerSpeakTo(Player* player, SpeakClasses type, const std::string &receiver, const std::string &text);
 		void playerSpeakToNpc(Player* player, const std::string &text);
 

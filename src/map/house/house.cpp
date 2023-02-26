@@ -576,9 +576,9 @@ void Door::onRemoved() {
 }
 
 House* Houses::getHouseByPlayerId(uint32_t playerId) {
-	for (auto &it : houseMap) {
-		if (it.second.getOwner() == playerId) {
-			return &it.second;
+	for (auto &[key, value] : houseMap) {
+		if (value.getOwner() == playerId) {
+			return &value;
 		}
 	}
 	return nullptr;
@@ -634,8 +634,8 @@ void Houses::payHouses(RentPeriod_t rentPeriod) const {
 	}
 
 	time_t currentTime = time(nullptr);
-	for (auto &it : houseMap) {
-		House* house = const_cast<House*>(&it.second);
+	for (auto &[key, value] : houseMap) {
+		auto house = const_cast<House*>(&value);
 		if (house->getOwner() == 0) {
 			continue;
 		}

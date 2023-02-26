@@ -291,7 +291,7 @@ class Spell : public BaseSpell {
 	protected:
 		void applyCooldownConditions(Player* player) const;
 		bool playerSpellCheck(Player* player) const;
-		bool playerInstantSpellCheck(Player* player, const Position &toPos);
+		bool playerInstantSpellCheck(const Player* player, const Position &toPos) const;
 		bool playerRuneSpellCheck(Player* player, const Position &toPos);
 
 		VocSpellMap vocSpellMap;

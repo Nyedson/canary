@@ -515,8 +515,6 @@ class Creature : virtual public Thing {
 		CreatureEventList eventsList;
 		ConditionList conditions;
 
-		std::vector<Direction> listWalkDir;
-
 		Tile* tile = nullptr;
 		Creature* attackedCreature = nullptr;
 		Creature* master = nullptr;
@@ -612,6 +610,11 @@ class Creature : virtual public Thing {
 		bool canFollowMaster() const;
 		bool isLostSummon() const;
 		void handleLostSummon(bool teleportSummons);
+
+		std::vector<Direction> listWalkDir;
+
+		friend class Npc;
+		friend class Player;
 };
 
 #endif // SRC_CREATURES_CREATURE_H_
