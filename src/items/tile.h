@@ -26,41 +26,56 @@ class BedItem;
 using CreatureVector = std::vector<Creature*>;
 using ItemVector = std::vector<Item*>;
 
-class SpectatorVector : public CreatureVector
-{
+class SpectatorVector : private CreatureVector {
 	public:
-		void mergeSpectators(const SpectatorVector& spectators) {
-			size_t it = 0, end = spectators.size();
-			while (it < end) {
-				Creature* spectator = spectators[it];
+		SpectatorVector() :
+			specs(32) { }
 
-				size_t cit = 0, cend = size();
-				while (cit < cend) {
-					if (operator[](cit) == spectator) {
-						goto Skip_Duplicate;
-					} else {
-						++cit;
-					}
+		using CreatureVector::begin;
+		using CreatureVector::capacity;
+		using CreatureVector::clear;
+		using CreatureVector::const_iterator;
+		using CreatureVector::emplace_back;
+		using CreatureVector::empty;
+		using CreatureVector::end;
+		using CreatureVector::insert;
+		using CreatureVector::iterator;
+		using CreatureVector::push_back;
+		using CreatureVector::reserve;
+		using CreatureVector::shrink_to_fit;
+		using CreatureVector::size;
+
+		using reference = CreatureVector::reference;
+		using const_reference = CreatureVector::const_reference;
+
+		reference operator[](std::size_t index) {
+			return specs[index];
+		}
+		const_reference operator[](std::size_t index) const {
+			return specs[index];
+		}
+
+		void mergeSpectators(const SpectatorVector &spectators) {
+			for (const auto &spectator : spectators) {
+				if (std::find(specs.begin(), specs.end(), spectator) == specs.end()) {
+					specs.emplace_back(spectator);
 				}
-
-				emplace_back(spectator);
-				Skip_Duplicate:
-				++it;
 			}
 		}
 
 		void erase(Creature* spectator) {
-			size_t it = 0, end = size();
-			while (it < end) {
-				if (operator[](it) == spectator) {
-					std::swap(operator[](it), back());
-					pop_back();
-					return;
-				} else {
-					++it;
-				}
+			auto it = std::find(specs.begin(), specs.end(), spectator);
+			if (it != specs.end()) {
+				specs.erase(it);
 			}
 		}
+
+		operator CreatureVector&() {
+			return specs;
+		}
+
+	private:
+		CreatureVector specs;
 };
 
 class TileItemVector : private ItemVector {
@@ -277,9 +292,9 @@ class Tile : public Cylinder {
 
 	private:
 		void onAddTileItem(Item* item);
-		void onUpdateTileItem(Item* oldItem, const ItemType& oldType, Item* newItem, const ItemType& newType);
-		void onRemoveTileItem(const SpectatorVector& spectators, const std::vector<int32_t>& oldStackPosVector, Item* item);
-		void onUpdateTile(const SpectatorVector& spectators);
+		void onUpdateTileItem(Item* oldItem, const ItemType &oldType, Item* newItem, const ItemType &newType);
+		void onRemoveTileItem(const SpectatorVector &spectators, const std::vector<int32_t> &oldStackPosVector, Item* item);
+		void onUpdateTile(const SpectatorVector &spectators);
 
 		void setTileFlags(const Item* item);
 		void resetTileFlags(const Item* item);
