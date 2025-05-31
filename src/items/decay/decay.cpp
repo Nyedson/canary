@@ -18,7 +18,7 @@ Decay &Decay::getInstance() {
 	return inject<Decay>();
 }
 
-void Decay::startDecay(const std::shared_ptr<Item> &item) {
+void Decay::startDecay(const std::shared_ptr<Item>& item) {
 	if (!item) {
 		return;
 	}
@@ -33,118 +33,97 @@ void Decay::startDecay(const std::shared_ptr<Item> &item) {
 		return;
 	}
 
-	g_logger().trace("Try decay item {}", item->getName());
-
-	const auto duration = item->getAttribute<int64_t>(ItemAttribute_t::DURATION);
+	const int64_t duration = item->getAttribute<int64_t>(ItemAttribute_t::DURATION);
 	if (duration <= 0 && item->hasAttribute(ItemAttribute_t::DURATION)) {
 		internalDecayItem(item);
 		return;
 	}
 
-	if (duration > 0) {
-		if (item->hasAttribute(ItemAttribute_t::DURATION_TIMESTAMP)) {
+	const int64_t timestamp = OTSYS_TIME() + duration;
+
+	// Só interrompe decay anterior se timestamp for diferente
+	if (item->hasAttribute(ItemAttribute_t::DURATION_TIMESTAMP)) {
+		const int64_t currentTimestamp = item->getAttribute<int64_t>(ItemAttribute_t::DURATION_TIMESTAMP);
+		if (currentTimestamp != timestamp) {
 			stopDecay(item);
 		}
+	}
 
-		const int64_t timestamp = OTSYS_TIME() + duration;
-		if (decayMap.empty()) {
-			eventId = g_dispatcher().scheduleEvent(
-				std::max<int32_t>(SCHEDULER_MINTICKS, duration), [this] { checkDecay(); }, "Decay::checkDecay"
-			);
-		} else {
-			if (timestamp < decayMap.begin()->first) {
-				g_dispatcher().stopEvent(eventId);
-				eventId = g_dispatcher().scheduleEvent(
-					std::max<int32_t>(SCHEDULER_MINTICKS, duration), [this] { checkDecay(); }, "Decay::checkDecay"
-				);
-			}
-		}
+	item->setDecaying(DECAYING_TRUE);
+	item->setAttribute(ItemAttribute_t::DURATION_TIMESTAMP, timestamp);
+	decayMap[timestamp].push_back(item);
 
-		item->setDecaying(DECAYING_TRUE);
-		item->setAttribute(ItemAttribute_t::DURATION_TIMESTAMP, timestamp);
-		decayMap[timestamp].push_back(item);
+	if (decayMap.size() == 1 || timestamp < nextDecayTimestamp) {
+		// Novo menor timestamp, reagendar evento
+		g_dispatcher().stopEvent(eventId);
+		eventId = g_dispatcher().scheduleEvent(
+			std::max<int32_t>(SCHEDULER_MINTICKS, duration),
+			[this] { checkDecay(); },
+			"Decay::checkDecay"
+		);
+		nextDecayTimestamp = timestamp;
 	}
 }
 
-void Decay::stopDecay(const std::shared_ptr<Item> &item) {
-	if (!item || !item->hasAttribute(ItemAttribute_t::DECAYSTATE)) {
+void Decay::stopDecay(const std::shared_ptr<Item>& item) {
+	if (!item) {
+		return;
+	}
+
+	if (!item->hasAttribute(ItemAttribute_t::DECAYSTATE)) {
 		return;
 	}
 
 	const int64_t timestamp = item->getAttribute<int64_t>(ItemAttribute_t::DURATION_TIMESTAMP);
-	if (timestamp == 0) {
-		item->removeAttribute(ItemAttribute_t::DECAYSTATE);
-		return;
-	}
 
 	auto it = decayMap.find(timestamp);
-	if (it == decayMap.end()) {
-		item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
-		item->removeAttribute(ItemAttribute_t::DECAYSTATE);
-		return;
-	}
-
-	auto &decayItems = it->second;
-
-	for (size_t i = 0; i < decayItems.size(); ++i) {
-		if (item == decayItems[i]) {
-			if (item->hasAttribute(ItemAttribute_t::DURATION)) {
-				item->setDuration(item->getDuration());
-			}
-
-			item->removeAttribute(ItemAttribute_t::DECAYSTATE);
-
-			if (decayItems.size() == 1) {
+	if (it != decayMap.end()) {
+		auto& decayItems = it->second;
+		auto itItem = std::find(decayItems.begin(), decayItems.end(), item);
+		if (itItem != decayItems.end()) {
+			decayItems.erase(itItem);
+			if (decayItems.empty()) {
 				decayMap.erase(it);
-			} else {
-				decayItems[i] = decayItems.back();
-				decayItems.pop_back();
+				if (decayMap.empty()) {
+					nextDecayTimestamp = 0;
+				}
 			}
-
-			item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
-			return;
 		}
 	}
 
+	item->removeAttribute(ItemAttribute_t::DECAYSTATE);
 	item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
 }
 
 void Decay::checkDecay() {
-	const int64_t timestamp = OTSYS_TIME();
+	const int64_t now = OTSYS_TIME();
 
-	std::vector<std::shared_ptr<Item>> tempItems;
-	tempItems.reserve(32); // Small preallocation
+	tempItems.clear();
 
 	auto it = decayMap.begin();
-	const auto end = decayMap.end();
-	while (it != end) {
-		if (it->first > timestamp) {
-			break;
-		}
-
-		// Iterating here is unsafe so let's copy our items into temporary vector
-		auto &decayItems = it->second;
-		tempItems.reserve(tempItems.size() + decayItems.size());
-		for (auto &decayItem : decayItems) {
-			tempItems.emplace_back(decayItem);
-		}
+	while (it != decayMap.end() && it->first <= now) {
+		auto& decayItems = it->second;
+		tempItems.insert(tempItems.end(), decayItems.begin(), decayItems.end());
 		it = decayMap.erase(it);
 	}
 
-	for (const auto &item : tempItems) {
+	for (const auto& item : tempItems) {
+		item->setDecaying(DECAYING_FALSE);
+
 		if (!item->canDecay()) {
-			item->setDuration(item->getDuration());
-			item->setDecaying(DECAYING_FALSE);
+			item->setDuration(item->getDuration()); // reinicia contagem se necessário
 		} else {
-			item->setDecaying(DECAYING_FALSE);
 			internalDecayItem(item);
 		}
 	}
 
-	if (it != end) {
-		eventId = g_dispatcher().scheduleEvent(
-			std::max<int32_t>(SCHEDULER_MINTICKS, static_cast<int32_t>(it->first - timestamp)), [this] { checkDecay(); }, "Decay::checkDecay"
-		);
+	// Agendar o próximo decay, se houver
+	if (it != decayMap.end()) {
+		const int64_t delay = std::max<int32_t>(SCHEDULER_MINTICKS, static_cast<int32_t>(it->first - now));
+		eventId = g_dispatcher().scheduleEvent(delay, [this] { checkDecay(); }, "Decay::checkDecay");
+		nextDecayTimestamp = it->first;
+	} else {
+		nextDecayTimestamp = 0; // Nada mais a processar
 	}
 }
 
