@@ -18,7 +18,7 @@ Decay &Decay::getInstance() {
 	return inject<Decay>();
 }
 
-void Decay::startDecay(const std::shared_ptr<Item>& item) {
+void Decay::startDecay(const std::shared_ptr<Item> &item) {
 	if (!item) {
 		return;
 	}
@@ -65,7 +65,7 @@ void Decay::startDecay(const std::shared_ptr<Item>& item) {
 	}
 }
 
-void Decay::stopDecay(const std::shared_ptr<Item>& item) {
+void Decay::stopDecay(const std::shared_ptr<Item> &item) {
 	if (!item) {
 		return;
 	}
@@ -78,7 +78,7 @@ void Decay::stopDecay(const std::shared_ptr<Item>& item) {
 
 	auto it = decayMap.find(timestamp);
 	if (it != decayMap.end()) {
-		auto& decayItems = it->second;
+		auto &decayItems = it->second;
 		auto itItem = std::find(decayItems.begin(), decayItems.end(), item);
 		if (itItem != decayItems.end()) {
 			decayItems.erase(itItem);
@@ -102,12 +102,12 @@ void Decay::checkDecay() {
 
 	auto it = decayMap.begin();
 	while (it != decayMap.end() && it->first <= now) {
-		auto& decayItems = it->second;
+		auto &decayItems = it->second;
 		tempItems.insert(tempItems.end(), decayItems.begin(), decayItems.end());
 		it = decayMap.erase(it);
 	}
 
-	for (const auto& item : tempItems) {
+	for (const auto &item : tempItems) {
 		item->setDecaying(DECAYING_FALSE);
 
 		if (!item->canDecay()) {
@@ -120,7 +120,9 @@ void Decay::checkDecay() {
 	// Agendar o próximo decay, se houver
 	if (it != decayMap.end()) {
 		const int64_t delay = std::max<int32_t>(SCHEDULER_MINTICKS, static_cast<int32_t>(it->first - now));
-		eventId = g_dispatcher().scheduleEvent(delay, [this] { checkDecay(); }, "Decay::checkDecay");
+		eventId = g_dispatcher().scheduleEvent(
+			delay, [this] { checkDecay(); }, "Decay::checkDecay"
+		);
 		nextDecayTimestamp = it->first;
 	} else {
 		nextDecayTimestamp = 0; // Nada mais a processar
