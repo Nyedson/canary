@@ -31,8 +31,8 @@ private:
 	// order is important, so we use an std::map
 	std::map<int64_t, std::vector<std::shared_ptr<Item>>> decayMap;
 
-int64_t nextDecayTimestamp = 0;
-std::vector<std::shared_ptr<Item>> tempItems;
+	int64_t nextDecayTimestamp = 0;
+	std::vector<std::shared_ptr<Item>> tempItems;
 };
 
 constexpr auto g_decay = Decay::getInstance;
