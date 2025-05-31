@@ -66,7 +66,7 @@ void Decay::startDecay(const std::shared_ptr<Item> &item) {
 	}
 }
 
-void Decay::stopDecay(const std::shared_ptr<Item>& item) {
+void Decay::stopDecay(const std::shared_ptr<Item> &item) {
 	if (!item || !item->hasAttribute(ItemAttribute_t::DECAYSTATE)) {
 		return;
 	}
@@ -84,7 +84,7 @@ void Decay::stopDecay(const std::shared_ptr<Item>& item) {
 		return;
 	}
 
-	auto& decayItems = it->second;
+	auto &decayItems = it->second;
 
 	for (size_t i = 0; i < decayItems.size(); ++i) {
 		if (item == decayItems[i]) {
