@@ -66,53 +66,47 @@ void Decay::startDecay(const std::shared_ptr<Item> &item) {
 	}
 }
 
-void Decay::stopDecay(const std::shared_ptr<Item> &item) {
-	if (!item) {
+void Decay::stopDecay(const std::shared_ptr<Item>& item) {
+	if (!item || !item->hasAttribute(ItemAttribute_t::DECAYSTATE)) {
 		return;
 	}
-	if (item->hasAttribute(ItemAttribute_t::DECAYSTATE)) {
-		const auto timestamp = item->getAttribute<int64_t>(ItemAttribute_t::DURATION_TIMESTAMP);
-		if (item->hasAttribute(ItemAttribute_t::DURATION_TIMESTAMP)) {
-			const auto it = decayMap.find(timestamp);
-			if (it != decayMap.end()) {
-				auto &decayItems = it->second;
 
-				size_t i = 0;
-				const size_t end = decayItems.size();
-				auto decayItem = decayItems[i];
-				if (end == 1) {
-					if (item == decayItem) {
-						if (item->hasAttribute(ItemAttribute_t::DURATION)) {
-							// Incase we removed duration attribute don't assign new duration
-							item->setDuration(item->getDuration());
-						}
-						item->removeAttribute(ItemAttribute_t::DECAYSTATE);
+	const int64_t timestamp = item->getAttribute<int64_t>(ItemAttribute_t::DURATION_TIMESTAMP);
+	if (timestamp == 0) {
+		item->removeAttribute(ItemAttribute_t::DECAYSTATE);
+		return;
+	}
 
-						decayMap.erase(it);
-					}
-					return;
-				}
-				while (i < end) {
-					decayItem = decayItems[i];
-					if (item == decayItem) {
-						if (item->hasAttribute(ItemAttribute_t::DURATION)) {
-							// Incase we removed duration attribute don't assign new duration
-							item->setDuration(item->getDuration());
-						}
-						item->removeAttribute(ItemAttribute_t::DECAYSTATE);
+	auto it = decayMap.find(timestamp);
+	if (it == decayMap.end()) {
+		item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
+		item->removeAttribute(ItemAttribute_t::DECAYSTATE);
+		return;
+	}
 
-						decayItems[i] = decayItems.back();
-						decayItems.pop_back();
-						return;
-					}
-					++i;
-				}
+	auto& decayItems = it->second;
+
+	for (size_t i = 0; i < decayItems.size(); ++i) {
+		if (item == decayItems[i]) {
+			if (item->hasAttribute(ItemAttribute_t::DURATION)) {
+				item->setDuration(item->getDuration());
 			}
-			item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
-		} else {
+
 			item->removeAttribute(ItemAttribute_t::DECAYSTATE);
+
+			if (decayItems.size() == 1) {
+				decayMap.erase(it);
+			} else {
+				decayItems[i] = decayItems.back();
+				decayItems.pop_back();
+			}
+
+			item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
+			return;
 		}
 	}
+
+	item->removeAttribute(ItemAttribute_t::DURATION_TIMESTAMP);
 }
 
 void Decay::checkDecay() {
